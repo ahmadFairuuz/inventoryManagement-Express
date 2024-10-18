@@ -1,11 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const transactionService = require("./transaction.service");
+const authorizeJWT = require("../middleware/authorizeJWT");
+const adminAuthorization = require("../middleware/adminAuthorization");
 
 // Borrow Item
-router.post("/borrow", async (req, res) => {
+router.post("/borrow", authorizeJWT, async (req, res) => {
   try {
-    const { userId, itemId, quantityBorrowed } = req.body;
+    const userId = req.userId;
+
+    const { itemId, quantityBorrowed } = req.body;
 
     const newTransaction = await transactionService.borrowItem(
       userId,
@@ -15,12 +19,13 @@ router.post("/borrow", async (req, res) => {
 
     res.status(201).json(newTransaction);
   } catch (error) {
+    console.error("Error creating transaction:", error.message);
     res.status(400).send(error.message);
   }
 });
 
 // Get All Transactions
-router.get("/", async (req, res) => {
+router.get("/", adminAuthorization, async (req, res) => {
   try {
     const transactions = await transactionService.getAllTransactions();
 
@@ -31,8 +36,8 @@ router.get("/", async (req, res) => {
 });
 
 // Get Transactions by User ID
-router.get("/user", async (req, res) => {
-  const { userId } = req.body;
+router.get("/user", authorizeJWT, async (req, res) => {
+  const userId = req.userId;
 
   try {
     const transactions =
@@ -45,7 +50,7 @@ router.get("/user", async (req, res) => {
 });
 
 // Get Transactions by ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", adminAuthorization, async (req, res) => {
   const transactionId = req.body;
 
   try {
@@ -58,7 +63,8 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.patch("/verify/:transactionId", async (req, res) => {
+// Verify Transaction
+router.patch("/verify/:transactionId", adminAuthorization, async (req, res) => {
   try {
     const { transactionId } = req.params;
 
@@ -73,12 +79,11 @@ router.patch("/verify/:transactionId", async (req, res) => {
 });
 
 // Return Item
-
-router.patch("/return/:transactionId", async (req, res) => {
+router.post("/return/:transactionId", authorizeJWT, async (req, res) => {
   try {
     const { transactionId } = req.params;
 
-    const { userId } = req.body;
+    const userId = req.userId;
 
     const transaction =
       await transactionService.getTransactionById(transactionId);

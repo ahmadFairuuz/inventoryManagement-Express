@@ -48,7 +48,7 @@ model Transaction {
   returnedAt       DateTime?
   status           TransactionStatus
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   item Item @relation(fields: [itemId], references: [id])
 }
 

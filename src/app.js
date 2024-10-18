@@ -13,11 +13,13 @@ const authController = require("./auth/auth.controller");
 const itemController = require("./item/item.controller");
 const userController = require("./user/user.controller");
 const transactionController = require("./transaction/transaction.controller");
+const adminAuthorization = require("./middleware/adminAuthorization");
 
 app.use("/api/auth", authController);
 app.use("/api/items", itemController);
 app.use("/api/users", userController);
 app.use("/api/transaction", transactionController);
+app.use("/api/users", adminAuthorization, userController);
 
 app.listen(PORT, "127.0.0.1", () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
